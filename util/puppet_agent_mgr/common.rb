@@ -88,8 +88,12 @@ module MCollective
           summary
         end
 
-        def run_in_foreground(clioptions, execute=true)
-          options = ["--test", "--color=false"].concat(clioptions)
+        def run_in_foreground(clioptions, execute=true, masterless=false)
+          if masterless
+            options = clioptions
+          else
+            options = ["--test", "--color=false"].concat(clioptions)
+          end
 
           return options unless execute
 
@@ -162,7 +166,7 @@ module MCollective
         #
         # else a single background run will be attempted but this will fail if a idling
         # daemon is present and :signal_daemon was false
-        def runonce!(options={})
+        def runonce!(options={}, masterless = false)
           valid_options = [:noop, :signal_daemon, :foreground_run, :tags, :environment, :server, :splay, :splaylimit, :options_only, :ignoreschedules]
 
           options.keys.each do |opt|
@@ -189,14 +193,14 @@ module MCollective
           end
 
           if foreground_run
-            return :foreground_run, run_in_foreground(clioptions, false) if options[:options_only]
-            return run_in_foreground(clioptions)
+            return :foreground_run, run_in_foreground(clioptions, false, masterless) if options[:options_only]
+            return run_in_foreground(clioptions, true, masterless)
           elsif idling? && signal_daemon
             return :signal_running_daemon, clioptions if options[:options_only]
             return signal_running_daemon
           else
             raise "Cannot run when the agent is running" if applying?
-            return :run_in_foreground, run_in_foreground(clioptions, false)
+            return :run_in_foreground, run_in_foreground(clioptions, false, masterless)
           end
         end
 

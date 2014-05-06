@@ -188,16 +188,9 @@ module MCollective
         end
 
         begin
-          run_method, options = @puppet_agent.runonce!(args)
+          run_method, options = @puppet_agent.runonce!(args, @puppet_masterless)
         rescue => e
           reply.fail!(reply[:summary] = e.to_s)
-        end
-
-        # get rid of the default options if masterless is set
-        if @puppet_masterless
-          command = @puppet_command
-        else
-          command = [@puppet_command].concat(options).join(" ")
         end
 
         case run_method
