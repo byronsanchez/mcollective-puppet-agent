@@ -13,6 +13,7 @@ module MCollective
         @puppet_service = @config.pluginconf.fetch("puppet.windows_service", "puppet")
         @puppet_splaylimit = Integer(@config.pluginconf.fetch("puppet.splaylimit", 30))
         @puppet_splay = @config.pluginconf.fetch("puppet.splay", "true")
+        @puppet_masterless = @config.pluginconf.fetch("puppet.masterless", "false")
 
         @puppet_agent = Util::PuppetAgentMgr.manager(configfile, @puppet_service)
       end
@@ -192,7 +193,12 @@ module MCollective
           reply.fail!(reply[:summary] = e.to_s)
         end
 
-        command = [@puppet_command].concat(options).join(" ")
+        # get rid of the default options if masterless is set
+        if @puppet_masterless
+          command = @puppet_command
+        else
+          command = [@puppet_command].concat(options).join(" ")
+        end
 
         case run_method
           when :run_in_foreground
