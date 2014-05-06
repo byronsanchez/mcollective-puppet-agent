@@ -193,6 +193,8 @@ module MCollective
           reply.fail!(reply[:summary] = e.to_s)
         end
 
+        command = [@puppet_command].concat(options).join(" ")
+
         case run_method
           when :run_in_foreground
             Log.debug("Initiating a puppet agent run using the command: %s" % command)
